@@ -5,6 +5,8 @@ export default class Handler {
   app = new Hono();
 
   constructor() {
-    this.app.route("/", new PostHandler().posts);
+    const postHandler = new PostHandler();
+    
+    this.app.route("/", postHandler.posts);
   }
 }
