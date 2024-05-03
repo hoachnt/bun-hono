@@ -1,13 +1,7 @@
 import { Hono, type Context, type Env } from "hono";
 import Service from "../service/service";
 import type { BlankInput } from "hono/types";
-
-interface IPost {
-  id: number;
-  userId: number;
-  title: string;
-  body: string;
-}
+import type { IPost } from "../repository/posts";
 
 export default class PostHandler {
   service: Service;
@@ -20,6 +14,7 @@ export default class PostHandler {
     this.posts.get("/posts", (c) => this.getAll(c));
     this.posts.get("/posts/:id", (c) => this.get(c));
     this.posts.delete("/posts/:id", (c) => this.delete(c));
+    this.posts.put("/posts/:id", (c) => this.put(c));
   }
 
   get(c: Context<Env, "/post/:id", BlankInput>) {
@@ -82,5 +77,19 @@ export default class PostHandler {
 
       return c.json({ error: "Post not defined or bad request" });
     }
+  }
+  async put(c: Context<Env, "/posts/:id", BlankInput>) {
+    const { id } = c.req.param();
+    const post: IPost = await c.req.json();
+
+    const { updatedPost, isError } = this.service.posts.put(post, Number(id));
+
+    if (isError) {
+      c.status(400);
+      return c.json({ error: "data is not valid" });
+    }
+
+    c.status(200);
+    return c.json(updatedPost);
   }
 }

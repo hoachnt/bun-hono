@@ -1,20 +1,13 @@
 import type { Context, Env } from "hono";
 import type { BlankInput } from "hono/types";
-import type { IRepositoryApi } from "../repository/posts";
-
-interface IPost {
-  id: number;
-  userId: number;
-  title: string;
-  body: string;
-}
+import type { IPost, IPutRespose, IRepositoryApi } from "../repository/posts";
 
 interface IServiceApi {
   get(id: number): IPost | undefined;
   getAll(): IPost[];
   delete(id: number): boolean;
   post(data: IPost): boolean;
-  //   put: (c: Context<Env, string, BlankInput>) => {};
+  put(data: IPost, id: number): IPutRespose;
 }
 
 export default class PostsService implements IServiceApi {
@@ -36,5 +29,7 @@ export default class PostsService implements IServiceApi {
   delete(id: number): boolean {
     return this.postsRepository.delete(id);
   }
-  private put(c: Context<Env, "/posts", BlankInput>) {}
+  put(data: IPost, id: number) {
+    return this.postsRepository.put(data, id);
+  }
 }

@@ -2,7 +2,7 @@ import type { Context, Env } from "hono";
 import type { BlankInput } from "hono/types";
 import { db } from "../../initDatabase";
 
-interface IPost {
+export interface IPost {
   id: number;
   userId: number;
   title: string;
@@ -14,7 +14,11 @@ export interface IRepositoryApi {
   getAll(): IPost[];
   delete(id: number): boolean;
   post(data: IPost): boolean;
-  put(c: Context<Env, string, BlankInput>): void;
+  put(data: IPost, id: number): IPutRespose;
+}
+export interface IPutRespose {
+  updatedPost: IPost | null;
+  isError: boolean;
 }
 
 export default class PostRepository implements IRepositoryApi {
@@ -73,5 +77,23 @@ export default class PostRepository implements IRepositoryApi {
 
     return isError;
   }
-  put(c: Context<Env, "/posts", BlankInput>) {}
+  put(data: IPost, id: number): IPutRespose {
+    let isError = false;
+    const query = db.query(
+      `UPDATE posts SET title = '${data.title}', body = '${data.body}' WHERE id = ${id}`
+    );
+    const getPostQuery = db.query(`SELECT * FROM posts WHERE id = ${id}`);
+
+    query.run();
+
+    const updatedPost = getPostQuery.get() as IPost | null;
+
+    if (updatedPost == null) {
+      isError = true;
+    } else {
+      isError = false;
+    }
+
+    return { updatedPost, isError };
+  }
 }
